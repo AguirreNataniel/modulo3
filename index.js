@@ -30,12 +30,12 @@ class Controlador {
 const model = new Model()
 const controller = new Controlador(model)
 
-app.get('/usuarios/age-avg', UsersController.getAvgAge.bind(UsersController));
+// app.get('/usuarios/age-avg', UsersController.getAvgAge.bind(UsersController));
 app.get('/usuarios', controller.getUsuario.bind(controller))
-app.post('/usuarios', UsersController.createUser.bind(UsersController));
-app.get('/usuarios/:id', UsersController.getUser.bind(UsersController));
-app.put('/usuarios/:id', UsersController.editUser.bind(UsersController));
-app.delete('/usuarios/:id', UsersController.deleteUser.bind(UsersController));
+// app.post('/usuarios', UsersController.createUser.bind(UsersController));
+// app.get('/usuarios/:id', UsersController.getUser.bind(UsersController));
+// app.put('/usuarios/:id', UsersController.editUser.bind(UsersController));
+// app.delete('/usuarios/:id', UsersController.deleteUser.bind(UsersController));
 
 app.listen(port, () =>{
     console.log(`Servidor de MVC en javascript en http://localhost:${port}`);
