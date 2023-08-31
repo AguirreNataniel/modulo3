@@ -20,17 +20,22 @@ class Model {
 }
 
 class Controlador {
-    constructor(model){this.model=model}
+    constructor(model){this.model = model}
     async getUsuario(req, response) {
-        const usuario= await this.model.getUsuario()
+        const usuario = await this.model.getUsuario()
         response.status(200).send(usuario)
     }
 }
 
-const model= new Model()
-const controler= new Controlador(model)
+const model = new Model()
+const controller = new Controlador(model)
 
-app.get('/usuarios', controler.getUsuario.bind(controler))
+app.get('/usuarios/age-avg', UsersController.getAvgAge.bind(UsersController));
+app.get('/usuarios', controller.getUsuario.bind(controller))
+app.post('/usuarios', UsersController.createUser.bind(UsersController));
+app.get('/usuarios/:id', UsersController.getUser.bind(UsersController));
+app.put('/usuarios/:id', UsersController.editUser.bind(UsersController));
+app.delete('/usuarios/:id', UsersController.deleteUser.bind(UsersController));
 
 app.listen(port, () =>{
     console.log(`Servidor de MVC en javascript en http://localhost:${port}`);
