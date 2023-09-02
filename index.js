@@ -1,6 +1,6 @@
 const express =  require("express");
 const { Pool } = require("pg");
-
+// var bodyParser = require('body-parser');
 
 
 const app = express();
@@ -22,16 +22,16 @@ class Model {
         return rows;
     }
     
-    async addNombre(nombre){
-        await pool.query("insert into usuario (nombre) values($1);", [nombre])
+    async addID(id){
+        await pool.query("insert into usuario (id) values($1);", [id])
     }
 
     async addCI(ci){
         await pool.query("insert into usuario (CI) values($1);", [ci])
     }
 
-    async addID(id){
-        await pool.query("insert into usuario (id) values($1);", [id])
+    async addNombre(nombre){
+        await pool.query("insert into usuario (nombre) values($1);", [nombre])
     }
 
     async addPrimer_apellido(primer_apellido){
@@ -74,6 +74,8 @@ class Controller {
         this.model = model;
         this.view = view;
     }
+    
+    //Ale
     // async getUsuario(req, response) {
     //     const usuario = await this.model.getUsuario()
     //     response.status(200).send(usuario)
@@ -85,14 +87,64 @@ class Controller {
         res.send(html);
     }
 
-    async addNombre(req, res) {
+    async addID(req, res) {
         const name = req.body.name;
-        await this.model.addTodo(name)
+        await this.model.addID(name)
         const data = await this.model.getUsuario();
         const html = this.view.render(data);
         res.send(html)
     }
+
+async addNombre(req, res) {
+    const name = req.body.name;
+    await this.model.addNombre(name)
+    const data = await this.model.getUsuario();
+    const html = this.view.render(data);
+    res.send(html)
 }
+
+async addPrimer_apellido(req, res) {
+    const name = req.body.name;
+    await this.model.addPrimer_apellido(name)
+    const data = await this.model.getUsuario();
+    const html = this.view.render(data);
+    res.send(html)
+}
+
+async addSegundo_apellido(req, res) {
+    const name = req.body.name;
+    await this.model.addSegundo_apellido(name)
+    const data = await this.model.getUsuario();
+    const html = this.view.render(data);
+    res.send(html)
+}
+
+async addNacimiento(req, res) {
+    const name = req.body.name;
+    await this.model.addNacimiento(name)
+    const data = await this.model.getUsuario();
+    const html = this.view.render(data);
+    res.send(html)
+}
+
+async addEdad(req, res) {
+    const name = req.body.name;
+    await this.model.addEdad(name)
+    const data = await this.model.getUsuario();
+    const html = this.view.render(data);
+    res.send(html)
+}
+
+async addNombre(req, res) {
+    const name = req.body.name;
+    await this.model.addTodo(name)
+    const data = await this.model.getUsuario();
+    const html = this.view.render(data);
+    res.send(html)
+}
+
+}
+
 
 //Instanciación
 
@@ -102,12 +154,12 @@ const controller = new Controller(model, view)
 
 //Levantar la App
 
-app.use(bodyParser.json());
-app.use(
-    bodyParser.urlencoded({
-    extended: true,
-    }),
-);
+// app.use(bodyParser.json());
+// app.use(
+//     bodyParser.urlencoded({
+//     extended: true,
+//     }),
+// );
 
 app.use(express.urlencoded({extend: true}))
 
@@ -126,5 +178,5 @@ app.post("/add", controller.addUsuario.bind(controller));
 
 app.listen(port, () =>{
     console.log(`Servidor de MVC en javascript en http://localhost:${port}`);
-    // console.log(controller)
+    console.log(controller)
 })

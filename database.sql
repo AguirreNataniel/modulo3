@@ -1,5 +1,5 @@
 create table usuario (
-	id serial default,
+	id serial primary key,
     ci              varchar(10) not null,
     nombre            varchar(30) not null,
     primer_apellido  varchar(30) not null,
