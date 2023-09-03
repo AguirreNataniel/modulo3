@@ -1,6 +1,7 @@
 const express =  require("express");
 const { Pool } = require("pg");
-// var bodyParser = require('body-parser');
+
+const bodyParser = require('body-parser');
 
 
 const app = express();
@@ -14,157 +15,131 @@ const pool = new Pool({
     port: '54322',
 })
 
-// Modelo
+app.use(bodyParser.json());
+app.use(
+    bodyParser.urlencoded({
+    extended: true,
+    }),
+);
+// Modelo, es lo que se comunica con la DB
 
 class Model {
     async getUsuario() {
         const { rows } = await pool.query("select * from usuario;")
         return rows;
     }
-    
-    async addID(id){
-        await pool.query("insert into usuario (id) values($1);", [id])
+
+    async addUsuario(ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad){
+        await pool.query("insert into usuario (ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad) values($1, $2, $3, $4, $5, $6);", [ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad])
     }
 
-    async addCI(ci){
-        await pool.query("insert into usuario (CI) values($1);", [ci])
+    async getUsuarioID(id) {
+        const { rows } = await pool.query("select * from usuario where id= $1;", [id])
+        return rows;
     }
 
-    async addNombre(nombre){
-        await pool.query("insert into usuario (nombre) values($1);", [nombre])
+    async putUsuario(ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad) {
+        const editarUsuario = `
+            update users
+            set ci= '${ci}',
+            nombre='${nombre}',
+            first_lastname='${primer_apellido}',
+            second_lastname='${segundo_apellido}',
+            birth='${nacimiento}',
+            age='${edad}'
+            where id = ${id} RETURNING *
+            `;
+        const { rows } = await pool.query(editarUsuario);
+        return rows;
+    }    
+
+    async deleteUsuario(id) {
+        const editarUsuario = `
+            update users
+            set enabled = '${false}'
+            where id = ${id} RETURNING *
+            `;
+        await pool.query(editarUsuario);
     }
 
-    async addPrimer_apellido(primer_apellido){
-        await pool.query("insert into usuario (primer_apellido) values($1);", [primer_apellido])
+    async promedioUsuario() {
+        const avgQuery = 'select avg(extract(year from age(now(), birth))) as avg from users;';
+        const { rows } = await dbClient.query(avgQuery);
+        return rows;
     }
-    
-    async addSegundo_apellido(segundo_apellido){
-        await pool.query("insert into usuario (segundo_apellido) values($1);", [segundo_apellido])
-    }
-    
-    async addNacimiento(nacimiento){
-        await pool.query("insert into usuario (nacimiento) values($1);", [nacimiento])
-    }      
 
-    async addEdad(edad){
-        await pool.query("insert into usuario (edad) values($1);", [edad])
-    } 
-}
-
-// Vista
-class View {
-    render(data) {
-        let html = `
-        <form action="/add" method="post">
-        <input type="text" name="name">
-        <input type="submit">
-        </form>
-        `;
-        for (let i = 0; i < data.length; i++){
-            html += `<li>${data[i].nombre}</li>`
-        }
-        return html;
-    }
-}
+    //export default Model;
 
 //Controlador
 
 class Controller {
-    constructor(model, view){
+    constructor(model){
         this.model = model;
-        this.view = view;
     }
-    
-    //Ale
-    // async getUsuario(req, response) {
-    //     const usuario = await this.model.getUsuario()
-    //     response.status(200).send(usuario)
-    // }
     
     async getUsuario(req, res){
         const data = await this.model.getUsuario()
-        const html = this.view.render(data);
-        res.send(html);
+        res.send(data);
     }
 
-    async addID(req, res) {
-        const name = req.body.name;
-        await this.model.addID(name)
-        const data = await this.model.getUsuario();
-        const html = this.view.render(data);
-        res.send(html)
+    async addUsuario(req, res){
+        const { ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad } = req.body
+        await this.model.addUsuario(ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad)
+        res.status(201).send()
     }
 
-async addNombre(req, res) {
-    const name = req.body.name;
-    await this.model.addNombre(name)
-    const data = await this.model.getUsuario();
-    const html = this.view.render(data);
-    res.send(html)
-}
+    async getUsuarioID(req, res){
+        const {id} = req.params
+        const data = await this.model.getUsuarioID(id)
+        res.status(200).send(data) 
+    }
 
-async addPrimer_apellido(req, res) {
-    const name = req.body.name;
-    await this.model.addPrimer_apellido(name)
-    const data = await this.model.getUsuario();
-    const html = this.view.render(data);
-    res.send(html)
-}
+    async putUsuario(req, res) {
+        const { id } = req.params;
+        if (!id) {
+        res.status(400).send('Necesario ID');
+        }
+        const { ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad } = req.body;
+        if (!ci || !nombre || !primer_apellido || !segundo_apellido || !nacimiento || !edad) {
+        res.status(400).send('Requeridos todos los items');
+        }
+        const userEdited = await this.model.putUsuario(id, ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad);
+        res.status(200).send({ ...userEdited });
+    }
 
-async addSegundo_apellido(req, res) {
-    const name = req.body.name;
-    await this.model.addSegundo_apellido(name)
-    const data = await this.model.getUsuario();
-    const html = this.view.render(data);
-    res.send(html)
-}
+    async deleteUsuario(req, res) {
+        const { id } = req.params;
+        if (!id) {
+        res.status(400).send('Necesario ID');
+        }
+        await this.model.deleteUsuario(id);
+        res.status(204).send([]);
+        }
 
-async addNacimiento(req, res) {
-    const name = req.body.name;
-    await this.model.addNacimiento(name)
-    const data = await this.model.getUsuario();
-    const html = this.view.render(data);
-    res.send(html)
-}
+    async promedioUsuario(req, res) {
+        const avg = await this.model.promedioUsuario();
+        res.status(200).send({ avg });
+        }
 
-async addEdad(req, res) {
-    const name = req.body.name;
-    await this.model.addEdad(name)
-    const data = await this.model.getUsuario();
-    const html = this.view.render(data);
-    res.send(html)
-}
-
-async addNombre(req, res) {
-    const name = req.body.name;
-    await this.model.addTodo(name)
-    const data = await this.model.getUsuario();
-    const html = this.view.render(data);
-    res.send(html)
-}
+    async getVersionApi(req, res) {
+        const status = {
+        nameSystem: 'api-usuario',
+        version: '0.0.1',
+        developer: 'Nataniel Octavio Aguirre Borcezi',
+        email: 'natanielaguirre@gmail.com',
+        };
+        res.status(200).send(status);
+        }
 
 }
-
-
 //Instanciación
 
 const model = new Model()
-const view = new View();
-const controller = new Controller(model, view)
+const controller = new Controller(model)
 
-//Levantar la App
 
-// app.use(bodyParser.json());
-// app.use(
-//     bodyParser.urlencoded({
-//     extended: true,
-//     }),
-// );
-
-app.use(express.urlencoded({extend: true}))
-
-app.get("/", controller.getUsuario.bind(controller));
-app.post("/add", controller.addUsuario.bind(controller));
+app.get("/usuarios", controller.getUsuario.bind(controller));
+// app.post("/add", controller.addUsuario.bind(controller));
 // app.get('/usuarios', controller.getUsuario.bind(controller))
 // app.get('/usuarios/age-avg', UsersController.getAvgAge.bind(UsersController));
 // app.post('/usuarios', UsersController.createUser.bind(UsersController));
@@ -172,9 +147,17 @@ app.post("/add", controller.addUsuario.bind(controller));
 // app.put('/usuarios/:id', UsersController.editUser.bind(UsersController));
 // app.delete('/usuarios/:id', UsersController.deleteUser.bind(UsersController));
 
+app.get("/usuarios/:id", controller.getUsuarioID.bind(controller));
 
+app.post('/usuarios', controller.addUsuario.bind(controller));
 
+app.put('/usuarios/:id_usuario', controller.putUsuario.bind(controller));
 
+app.delete('/usuarios/:id_usuario', controller.deleteUsuario.bind(controller));
+
+app.get('/usuarios/promedio-edad', controller.promedioUsuario.bind(controller));
+
+app.get('/usuarios/estado', controller.getVersionApi.bind(controller));
 
 app.listen(port, () =>{
     console.log(`Servidor de MVC en javascript en http://localhost:${port}`);
