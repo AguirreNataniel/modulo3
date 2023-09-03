@@ -39,33 +39,28 @@ class Model {
         return rows;
     }
 
-    async putUsuario(ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad) {
+    async putUsuario(id, ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad) {
         const editarUsuario = `
-            update users
+            update usuario
             set ci= '${ci}',
-            cl  nombre='${nombre}',
-            first_lastname='${primer_apellido}',
-            second_lastname='${segundo_apellido}',
-            birth='${nacimiento}',
-            age='${edad}'
+            nombre='${nombre}',
+            primer_apellido='${primer_apellido}',
+            segundo_apellido='${segundo_apellido}',
+            nacimiento='${nacimiento}',
+            edad='${edad}'
             where id = ${id} RETURNING *
             `;
         const { rows } = await pool.query(editarUsuario);
         return rows;
-    }    
 
-    async deleteUsuario(id) {
-        const editarUsuario = `
-            update users
-            set enabled = '${false}'
-            where id = ${id} RETURNING *
-            `;
-        await pool.query(editarUsuario);
-    }
+    }   
+    async deleteUsuario(id_usuario) {
+        await pool.query("delete FROM usuario WHERE id = $1", [id_usuario]);
+      }
 
     async promedioUsuario() {
         const avgQuery = 'select avg(extract(year from age(now(), birth))) as avg from users;';
-        const { rows } = await dbClient.query(avgQuery);
+        const { rows } = await pool.query(avgQuery);
         return rows;
     }
 }
@@ -90,31 +85,33 @@ class Controller {
 
     async getUsuarioID(req, res){
         const {id} = req.params
+        console.log(id)
         const data = await this.model.getUsuarioID(id)
         res.status(200).send(data) 
     }
 
     async putUsuario(req, res) {
-        const { id } = req.params;
-        if (!id) {
+        const { id_usuario } = req.params;
+        if (!id_usuario) {
         res.status(400).send('Necesario ID');
         }
         const { ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad } = req.body;
         if (!ci || !nombre || !primer_apellido || !segundo_apellido || !nacimiento || !edad) {
         res.status(400).send('Requeridos todos los items');
         }
-        const userEdited = await this.model.putUsuario(id, ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad);
-        res.status(200).send({ ...userEdited });
+        const usuario = await this.model.putUsuario(id_usuario, ci, nombre, primer_apellido, segundo_apellido, nacimiento, edad);
+        res.status(200).send( usuario );
     }
 
     async deleteUsuario(req, res) {
-        const { id } = req.params;
-        if (!id) {
-        res.status(400).send('Necesario ID');
-        }
-        await this.model.deleteUsuario(id);
-        res.status(200).send([]);
-        }
+        const id_usuario = req.params.id_usuario;
+        await this.model.deleteUsuario(id_usuario);
+        res.sendStatus(204);
+      }
+    
+    //async deleteUsr(id_usuario) {
+    //    await pool.query("delete FROM usuario WHERE id_usuario = $1", [id_usuario]);
+    //  }
 
     async promedioUsuario(req, res) {
         const avg = await this.model.promedioUsuario();
