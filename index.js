@@ -21,6 +21,7 @@ app.use(
     extended: true,
     }),
 );
+
 // Modelo, es lo que se comunica con la DB
 
 class Model {
@@ -34,7 +35,7 @@ class Model {
     }
 
     async getUsuarioID(id) {
-        const { rows } = await pool.query("select * from usuario where id= $1;", [id])
+        const { rows } = await pool.query("select * from usuario where id = $1;", [id])
         return rows;
     }
 
@@ -68,9 +69,8 @@ class Model {
         return rows;
     }
 }
-    //export default Model;
 
-//Controlador
+// Controlador
 
 class Controller {
     constructor(model){
@@ -113,7 +113,7 @@ class Controller {
         res.status(400).send('Necesario ID');
         }
         await this.model.deleteUsuario(id);
-        res.status(204).send([]);
+        res.status(200).send([]);
         }
 
     async promedioUsuario(req, res) {
@@ -131,27 +131,27 @@ class Controller {
         res.status(203).send(status);
         }
 }
-//Instanciación
+// Instanciación
 
-const model = new Model()
-const controller = new Controller(model)
+const model = new Model();
+const controller = new Controller(model);
 
 
 app.get("/usuarios", controller.getUsuario.bind(controller));
 
 app.get("/usuarios/:id", controller.getUsuarioID.bind(controller));
 
-app.post('/usuarios', controller.addUsuario.bind(controller));
+app.post("/usuarios", controller.addUsuario.bind(controller));
 
-app.put('/usuarios/:id_usuario', controller.putUsuario.bind(controller));
+app.put("/usuarios/:id_usuario", controller.putUsuario.bind(controller));
 
-app.delete('/usuarios/:id_usuario', controller.deleteUsuario.bind(controller));
+app.delete("/usuarios/:id_usuario", controller.deleteUsuario.bind(controller));
 
-app.get('/usuarios/promedio-edad', controller.promedioUsuario.bind(controller));
+app.get("/usuarios/promedio-edad", controller.promedioUsuario.bind(controller));
 
-app.get('/usuarios/estado', controller.getVersionApi.bind(controller));
+app.get("/usuarios/estado", controller.getVersionApi.bind(controller));
 
 app.listen(port, () =>{
     console.log(`Servidor de MVC en javascript en http://localhost:${port}`);
-    console.log(controller)
+    console.log(controller);
 })
