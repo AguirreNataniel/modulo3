@@ -67,12 +67,12 @@ class Model {
         const { rows } = await dbClient.query(avgQuery);
         return rows;
     }
-
+}
     //export default Model;
 
 //Controlador
 
-class Controller {
+class Controller{
     constructor(model){
         this.model = model;
     }
@@ -128,9 +128,8 @@ class Controller {
         developer: 'Nataniel Octavio Aguirre Borcezi',
         email: 'natanielaguirre@gmail.com',
         };
-        res.status(200).send(status);
+        res.status(203).send(status);
         }
-
 }
 //Instanciación
 
@@ -139,13 +138,6 @@ const controller = new Controller(model)
 
 
 app.get("/usuarios", controller.getUsuario.bind(controller));
-// app.post("/add", controller.addUsuario.bind(controller));
-// app.get('/usuarios', controller.getUsuario.bind(controller))
-// app.get('/usuarios/age-avg', UsersController.getAvgAge.bind(UsersController));
-// app.post('/usuarios', UsersController.createUser.bind(UsersController));
-// app.get('/usuarios/:id', UsersController.getUser.bind(UsersController));
-// app.put('/usuarios/:id', UsersController.editUser.bind(UsersController));
-// app.delete('/usuarios/:id', UsersController.deleteUser.bind(UsersController));
 
 app.get("/usuarios/:id", controller.getUsuarioID.bind(controller));
 
