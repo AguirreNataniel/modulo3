@@ -42,7 +42,7 @@ class Model {
         const editarUsuario = `
             update users
             set ci= '${ci}',
-            nombre='${nombre}',
+            cl  nombre='${nombre}',
             first_lastname='${primer_apellido}',
             second_lastname='${segundo_apellido}',
             birth='${nacimiento}',
@@ -72,7 +72,7 @@ class Model {
 
 //Controlador
 
-class Controller{
+class Controller {
     constructor(model){
         this.model = model;
     }
