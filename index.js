@@ -127,7 +127,7 @@ class Controller {
         res.send(data);
         }
 }
-// Instanciación
+// La Instanciación
 
 const model = new Model();
 const controller = new Controller(model);
