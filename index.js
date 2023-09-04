@@ -56,12 +56,20 @@ class Model {
     }   
     async deleteUsuario(id_usuario) {
         await pool.query("delete FROM usuario WHERE id = $1", [id_usuario]);
-      }
+    }
 
     async promedioUsuario() {
-        const avgQuery = 'select avg(extract(year from age(now(), birth))) as avg from users;';
-        const { rows } = await pool.query(avgQuery);
+        const promedioQuery = 'select AVG(EXTRACT(YEAR FROM AGE(NOW(), nacimiento))) AS promedio_edades FROM usuario;';
+        const { rows } = await pool.query(promedioQuery);
         return rows;
+    }
+
+    async getVersionApi() {
+        const nameSystem="api-users";
+        const version="1.0.0";
+        const desarrollador="Nataniel Octavio Aguirre Borcezi";
+        const email="natanielaguirre@gmail.com";
+        return {nameSystem,version,desarrollador,email};
     }
 }
 
@@ -71,7 +79,7 @@ class Controller {
     constructor(model){
         this.model = model;
     }
-    
+
     async getUsuario(req, res){
         const data = await this.model.getUsuario()
         res.send(data);
@@ -107,25 +115,16 @@ class Controller {
         const id_usuario = req.params.id_usuario;
         await this.model.deleteUsuario(id_usuario);
         res.sendStatus(204);
-      }
-    
-    //async deleteUsr(id_usuario) {
-    //    await pool.query("delete FROM usuario WHERE id_usuario = $1", [id_usuario]);
-    //  }
+    }
 
     async promedioUsuario(req, res) {
-        const avg = await this.model.promedioUsuario();
-        res.status(200).send({ avg });
+        const promedio = await this.model.promedioUsuario();
+        res.status(208).send({ promedio });
         }
 
     async getVersionApi(req, res) {
-        const status = {
-        nameSystem: 'api-usuario',
-        version: '0.0.1',
-        developer: 'Nataniel Octavio Aguirre Borcezi',
-        email: 'natanielaguirre@gmail.com',
-        };
-        res.status(203).send(status);
+        const data = await this.model.getVersionApi();
+        res.send(data);
         }
 }
 // Instanciación
@@ -133,8 +132,9 @@ class Controller {
 const model = new Model();
 const controller = new Controller(model);
 
+app.get("/usuarios/promedio-edad", controller.promedioUsuario.bind(controller));
 
-app.get("/usuarios", controller.getUsuario.bind(controller));
+app.get("/usuarios", controller.getUsuario.bind(controller))
 
 app.get("/usuarios/:id", controller.getUsuarioID.bind(controller));
 
@@ -144,9 +144,7 @@ app.put("/usuarios/:id_usuario", controller.putUsuario.bind(controller));
 
 app.delete("/usuarios/:id_usuario", controller.deleteUsuario.bind(controller));
 
-app.get("/usuarios/promedio-edad", controller.promedioUsuario.bind(controller));
-
-app.get("/usuarios/estado", controller.getVersionApi.bind(controller));
+app.get("/estado", controller.getVersionApi.bind(controller));
 
 app.listen(port, () =>{
     console.log(`Servidor de MVC en javascript en http://localhost:${port}`);
